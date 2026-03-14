@@ -7,6 +7,10 @@ public class GainerStock {
     private double changePercent;
     private String volatilityLabel;    // "Low" / "Medium" / "High"
     private String compatibilityLabel; // from CompatibilityService
+    private boolean weekend = false;
+
+    public boolean isWeekend() { return weekend; }
+    public void setWeekend(boolean weekend) { this.weekend = weekend; }
 
     public String getSymbol() { return symbol; }
     public void setSymbol(String symbol) { this.symbol = symbol; }

@@ -167,7 +167,8 @@
         <div class="sf-card-label" style="margin-bottom:0; font-size:14px;">
           Stocks Worth Watching Today
         </div>
-        <span class="sf-badge sf-badge-green"><span class="live-dot">●</span> LIVE · UPDATED DAILY</span>
+        <span th:if="${!isWeekend}" class="sf-badge sf-badge-green"><span class="live-dot">●</span> LIVE · UPDATED DAILY</span>
+        <span th:if="${isWeekend}"  class="sf-badge sf-badge-yellow"><span class="live-dot">●</span> MARKET CLOSED · RECENT DATA</span>
       </div>
     </div>
 
@@ -187,7 +188,10 @@
     <div th:if="${#lists.isEmpty(recommended)}" style="border:1px dashed var(--border); border-radius:12px; padding:40px 20px; text-align:center; background:var(--bg-base); margin:20px 0;">
       <div style="font-size:40px; margin-bottom:12px;">📭</div>
       <div style="font-size:16px; font-weight:800; color:var(--text); margin-bottom:6px;">No matches today</div>
-      <div style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Top gainers are filtered for your <span th:text="${profile.category}"></span> profile. Check back tomorrow.</div>
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+        <span th:if="${!isWeekend}">Top gainers are filtered for your <span th:text="${profile.category}"></span> profile. Check back tomorrow.</span>
+        <span th:if="${isWeekend}">Markets are closed today. Showing recent performance data when available.</span>
+      </div>
       <span class="sf-badge" style="background:var(--bg-surface-2); color:var(--text-muted);">🔄 Refreshes daily at midnight</span>
     </div>
 

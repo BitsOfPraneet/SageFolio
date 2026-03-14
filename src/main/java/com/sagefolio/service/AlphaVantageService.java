@@ -29,7 +29,7 @@ public class AlphaVantageService {
         this.restTemplate = new RestTemplate();
     }
 
-    @Cacheable(value = "stockCache", key = "#a0")
+    @Cacheable(value = "stockCache", key = "#symbol")
     public StockAnalysis fetchStock(String symbol) {
         // Alpha Vantage supports Indian stocks predominantly via the BSE exchange (e.g., RELIANCE.BSE)
         String avSymbol = symbol.toUpperCase() + ".BSE";
@@ -58,6 +58,9 @@ public class AlphaVantageService {
                  String msg = root.has("Information") ? root.path("Information").asText() : root.path("Note").asText();
                  if (msg.toLowerCase().contains("rate limit") || msg.toLowerCase().contains("call frequency")) {
                      throw new RuntimeException("Alpha Vantage API rate limit exceeded. Please try again later. API permits 25 requests per day.");
+                 }
+                 if (msg.toLowerCase().contains("premium")) {
+                     throw new RuntimeException("Alpha Vantage API requires a Premium plan for this feature. Reverted to limited free tier mode.");
                  }
             }
 
@@ -228,7 +231,22 @@ public class AlphaVantageService {
             }
         }
 
-        // Return only gainers (positive change), sorted best first
+        // Check if market is likely open (Mon–Fri)
+        java.time.DayOfWeek today = java.time.LocalDate.now(
+            java.time.ZoneId.of("Asia/Kolkata")).getDayOfWeek();
+        boolean isWeekend = (today == java.time.DayOfWeek.SATURDAY
+                          || today == java.time.DayOfWeek.SUNDAY);
+
+        if (isWeekend) {
+            // Market closed — show top 5 by absolute performance, label handled in controller
+            results.sort((a, b) -> Double.compare(
+                Math.abs(b.getChangePercent()), Math.abs(a.getChangePercent())
+            ));
+            results.forEach(g -> g.setWeekend(true));
+            return results.stream().limit(5).collect(java.util.stream.Collectors.toList());
+        }
+
+        // Market open — only show positive gainers
         return results.stream()
             .filter(g -> g.getChangePercent() > 0)
             .sorted((a, b) -> Double.compare(b.getChangePercent(), a.getChangePercent()))

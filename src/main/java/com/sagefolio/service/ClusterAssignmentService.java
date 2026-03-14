@@ -24,12 +24,20 @@ public class ClusterAssignmentService {
     }
 
     public String assignCluster(double stddev, double atr, double drawdown) {
-        double stddevN   = normalize(stddev,   0.5, 5.0);
-        double atrN      = normalize(atr,      5.0, 200.0);
-        double drawdownN = normalize(drawdown, 0.5, 20.0);
+        // Guard: if drawdown is 0 (insufficient data), warn and use stddev only for assignment
+        if (drawdown == 0.0) {
+            System.out.println("⚠️ Drawdown is 0 — possibly insufficient price history. Cluster may be less accurate.");
+        }
+        // Normalization ranges calibrated to BSE Indian stocks (rupee-denominated ATR)
+        // stddev:   daily return % — typical range 0.3% to 4%
+        // atr:      rupee ATR — typical range ₹1 to ₹300 across BSE stocks
+        // drawdown: 30-day max drawdown % — typical range 0.5% to 25%
+        double stddevN   = normalize(stddev,   0.3,  4.0);
+        double atrN      = normalize(atr,      1.0,  300.0);
+        double drawdownN = normalize(drawdown, 0.5,  25.0);
 
         double minDist = Double.MAX_VALUE;
-        String label = "Medium";
+        String label = "Medium"; // safe default
 
         for (Centroid c : centroids) {
             double dist = Math.sqrt(
@@ -42,6 +50,11 @@ public class ClusterAssignmentService {
                 label = c.getVolatilityLabel();
             }
         }
+
+        // Log for debugging during demo
+        System.out.printf("Cluster assignment: stddev=%.4f(n=%.4f) atr=%.4f(n=%.4f) drawdown=%.4f(n=%.4f) → %s%n",
+            stddev, stddevN, atr, atrN, drawdown, drawdownN, label);
+
         return label;
     }
 

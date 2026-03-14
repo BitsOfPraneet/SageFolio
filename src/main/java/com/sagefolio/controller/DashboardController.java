@@ -47,6 +47,10 @@ public class DashboardController {
             .filter(g -> !g.getCompatibilityLabel().equals("High Risk Mismatch"))
             .collect(java.util.stream.Collectors.toList());
 
+        // Detect if results are from a weekend (market closed)
+        boolean isWeekend = !gainers.isEmpty() && gainers.get(0).isWeekend();
+        model.addAttribute("isWeekend", isWeekend);
+
         model.addAttribute("profile", profile);
         model.addAttribute("recommended", recommended);
         model.addAttribute("tips", getTips(profile.getCategory()));
