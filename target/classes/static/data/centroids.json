@@ -1,0 +1,23 @@
+[
+  {
+    "cluster": 0,
+    "volatilityLabel": "Low",
+    "stddevN": 0.177803,
+    "atrN": 0.082949,
+    "drawdownN": 0.610632
+  },
+  {
+    "cluster": 1,
+    "volatilityLabel": "Medium",
+    "stddevN": 0.205067,
+    "atrN": 0.890549,
+    "drawdownN": 0.95651
+  },
+  {
+    "cluster": 2,
+    "volatilityLabel": "High",
+    "stddevN": 0.288085,
+    "atrN": 0.118616,
+    "drawdownN": 0.954555
+  }
+]

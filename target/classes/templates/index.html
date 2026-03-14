@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(pageTitle='Home', currentPage='home', content=~{::main})}">
+<head></head>
+<body>
+<main>
+  <!-- Hero -->
+  <div class="sf-main text-center pb-0 pt-5" style="max-width:800px;margin-top:40px;">
+    <div class="sf-badge px-3 py-2 mb-4" style="background:var(--blue-bg);border-color:rgba(59,130,246,0.3);color:var(--blue);font-size:12px;">🌿 AI-Powered · Live NSE Data · Free</div>
+    <h1 style="font-size:56px;font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:24px;">Smart Investing<br>Starts <span style="background:var(--btn-gradient);-webkit-background-clip:text;color:transparent;">Here</span></h1>
+    <p style="font-size:18px;color:var(--text-muted);font-weight:400;margin-bottom:40px;line-height:1.6;">Understand your risk tolerance, explore Indian stocks with live data, and get AI-powered plain-English insights — built for beginners.</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="/risk-profile" class="sf-btn-primary">Start Risk Assessment →</a>
+      <a href="/stock-analysis" class="sf-btn-outline" style="padding:12px 28px;font-size:14px;">Explore Stocks</a>
+    </div>
+  </div>
+
+  <!-- Feature Cards -->
+  <div class="sf-main mt-5">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="sf-card h-100">
+          <div style="font-size:32px;margin-bottom:16px;">📊</div>
+          <div class="sf-card-header-main fs-4 mb-3">Risk Profile</div>
+          <p class="sf-card-desc mb-4">Answer 4 simple questions about your goals, income, and comfort with risk. Get your personal investor category in seconds.</p>
+          <a href="/risk-profile" class="sf-badge sf-badge-primary" style="cursor:pointer;padding:8px 16px;font-size:11px;">Take quiz →</a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="sf-card h-100">
+          <div style="font-size:32px;margin-bottom:16px;">📈</div>
+          <div class="sf-card-header-main fs-4 mb-3">Live NSE Data</div>
+          <p class="sf-card-desc mb-4">Prices fetched directly from Alpha Vantage API. Enter any NSE symbol to get a full year of price history.</p>
+          <a href="/stock-analysis" class="sf-badge sf-badge-green" style="cursor:pointer;padding:8px 16px;font-size:11px;">Explore →</a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="sf-card h-100">
+          <div style="font-size:32px;margin-bottom:16px;">🤖</div>
+          <div class="sf-card-header-main fs-4 mb-3">K-Means + AI</div>
+          <p class="sf-card-desc mb-4">Volatility classified live using K-Means centroids. Compatibility checked against your risk profile. Google Gemini writes a summary.</p>
+          <span class="sf-badge sf-badge-yellow" style="padding:8px 16px;font-size:11px;">Powered by ML + Gemini</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="sf-card mt-5" style="background:var(--bg-nav);border-color:var(--border);">
+      <div style="font-size:13px;color:var(--text-muted);text-align:center;">
+        ⚠️ <strong>Disclaimer:</strong> SageFolio is an educational tool only. Stock analysis, risk scores, and AI insights on this platform do not constitute financial advice. Always consult a SEBI-registered advisor before making investment decisions.
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

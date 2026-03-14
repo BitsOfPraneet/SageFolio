@@ -1,0 +1,15 @@
+com\sagefolio\service\RiskScoringService.class
+com\sagefolio\model\RiskProfile.class
+com\sagefolio\SagefolioApplication.class
+com\sagefolio\service\CompatibilityService.class
+com\sagefolio\model\Centroid.class
+com\sagefolio\controller\RiskController.class
+com\sagefolio\controller\StockController.class
+com\sagefolio\model\StockAnalysis.class
+com\sagefolio\service\AlphaVantageService.class
+com\sagefolio\controller\DashboardController.class
+com\sagefolio\model\GainerStock.class
+com\sagefolio\service\GeminiInsightService.class
+com\sagefolio\service\ClusterAssignmentService$1.class
+com\sagefolio\controller\HomeController.class
+com\sagefolio\service\ClusterAssignmentService.class

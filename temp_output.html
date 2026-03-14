@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Analysis | SageFolio</title>
+  <meta name="description" content="SageFolio – Smart Decisions for New Investors. AI-powered stock insights for Indian markets." />
+  <!-- Bootstrap 5 loaded FIRST so our custom CSS can override it -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <!-- Custom CSS loaded LAST -->
+  <link rel="stylesheet" href="/css/style.css;jsessionid=B8023BE97198A941738F7322C50AE74F" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="sf-nav">
+  <div class="sf-nav-left">
+    <a href="/" class="sf-logo">🌿 Sage<span>Folio</span></a>
+    <span class="sf-tagline">Smart Decisions for New Investors</span>
+  </div>
+  <div class="sf-nav-links">
+    <a href="/"               class="sf-nav-link">Home</a>
+    <a href="/risk-profile"   class="sf-nav-link">Risk Profile</a>
+    <a href="/stock-analysis" class="sf-nav-link  active">Stock Analysis</a>
+    <a href="#"               class="sf-nav-link sf-nav-schema">Schema</a>
+  </div>
+</nav>
+
+<!-- Page-specific content injected here -->
+<main class="sf-main">
+
+  <!-- ── Page header ──────────────────────────────── -->
+  <div class="sf-page-header">
+    <div class="sf-page-title"><span style="font-size:20px;">📈</span> Stock Analysis</div>
+    <div class="sf-step-indicator">Enter any NSE stock symbol to get live data, volatility classification, and a beginner-friendly AI insight.</div>
+  </div>
+
+  <!-- ── Profile Banner ────────────────────────────── -->
+  
+  <div class="sf-card mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2" style="padding:16px 20px;">
+    <div style="font-size:13px;color:var(--text-dim);">⚠️ No risk profile set. Compatibility analysis not available.</div>
+    <a href="/risk-profile" class="sf-btn-outline" style="font-size:11px;padding:6px 14px;">Take Risk Quiz →</a>
+  </div>
+
+  <!-- ── Search bar ──────────────────────────────── -->
+  <div class="sf-card mb-4">
+    <div class="sf-card-title">SEARCH NSE STOCK</div>
+    <form action="/stock/analyse;jsessionid=B8023BE97198A941738F7322C50AE74F" method="get" class="mb-0">
+      <div class="d-flex gap-3 align-items-center">
+        <input class="sf-input flex-grow-1" type="text" name="symbol" placeholder="Enter NSE Symbol (e.g. RELIANCE, TCS, INFY, HDFC, SBIN)" required
+               value="RELIANCE"/>
+        <button type="submit" class="sf-btn-primary" id="analyseBtn" onclick="showSpinner()" style="white-space:nowrap;">Analyse →</button>
+      </div>
+    </form>
+    <div class="mt-3" style="font-size:11px;color:var(--text-dim);">
+      Try: RELIANCE &nbsp;·&nbsp; TCS &nbsp;·&nbsp; HDFC &nbsp;·&nbsp; INFY &nbsp;·&nbsp; SBIN &nbsp;·&nbsp; WIPRO &nbsp;·&nbsp; ADANIPORTS &nbsp;·&nbsp; BAJFINANCE
+    </div>
+    <div id="sf-loading" class="text-center mt-3" style="display:none !important;">
+      <div class="sf-spinner"></div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:10px;margin-bottom:0;">Fetching live data from Alpha Vantage…</p>
+    </div>
+  </div>
+
+  <!-- ── Error box ──────────────────────────────── -->
+  
+
+  <!-- ── Dashboard (only if stock data available) ── -->
+  <div>
+
+    <!-- Row 1: Header strip -->
+    <div class="sf-card mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div style="font-size:26px;font-weight:900;letter-spacing:1px;color:var(--text);">RELIANCE</div>
+        <span class="sf-badge sf-badge-primary px-3 py-2" style="font-size:11px;">Downtrend</span>
+        <span class="sf-badge px-3 py-2  sf-badge-green" style="font-size:11px;">Low Volatility</span>
+      </div>
+      <div>
+        <div style="font-size:32px;font-weight:900;text-align:right;color:var(--text);">₹1391.85</div>
+        <div style="font-size:13px;text-align:right;font-weight:700;"
+             class=" text-aggressive">-0.44% (1Y)</div>
+      </div>
+    </div>
+
+    <!-- Row 2: Price Chart -->
+    <div class="sf-card mb-4" style="padding: 24px 24px 12px;">
+      <div class="sf-card-title d-flex align-items-center gap-3 mb-4">
+        PRICE HISTORY — 1 YEAR (NSE)
+        <span class="sf-badge sf-badge-primary px-2" style="font-size:10px;">LIVE · ALPHA VANTAGE</span>
+      </div>
+      <div style="position:relative; height:300px; width:100%;">
+          <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 3: Metrics + Cluster + Compatibility -->
+    <div class="row g-4 mb-4">
+      <!-- Metrics -->
+      <div class="col-md-4">
+        <div class="sf-card h-100">
+          <div class="sf-card-title">VOLATILITY METRICS</div>
+          <div class="d-flex flex-column gap-3 mt-4">
+            <div class="d-flex justify-content-between align-items-end" style="border-bottom:1px solid var(--border);padding-bottom:12px;">
+              <span style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">StdDev %</span>
+              <span style="font-size:18px;font-weight:800;color:var(--text);">1.27</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-end" style="border-bottom:1px solid var(--border);padding-bottom:12px;">
+              <span style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">ATR (14d)</span>
+              <span style="font-size:18px;font-weight:800;color:var(--text);">₹36.26</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-end">
+              <span style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Max Drawdown</span>
+              <span style="font-size:18px;font-weight:800;color:var(--text);">13.28%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cluster -->
+      <div class="col-md-4">
+        <div class="sf-card h-100 text-center d-flex flex-column justify-content-center pt-5">
+          <div class="sf-card-title mt-0 position-absolute" style="top:24px;left:24px;text-align:left;">K-MEANS CLUSTER</div>
+          <div class="mb-3">
+             <div style="width:48px;height:48px;border-radius:50%;margin:0 auto;box-shadow:0 0 20px rgba(255,255,255,0.1); background:var(--green);box-shadow:0 0 20px var(--green);"></div>
+          </div>
+          <div style="font-size:24px;font-weight:800;"
+               class=" text-conservative">Low Volatility</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:12px;">Cluster assigned live using K-Means centroid matching</div>
+        </div>
+      </div>
+
+      <!-- Compatibility -->
+      <div class="col-md-4">
+        <div class="sf-card h-100 text-center d-flex flex-column justify-content-center pt-5">
+          <div class="sf-card-title mt-0 position-absolute" style="top:24px;left:24px;text-align:left;">COMPATIBILITY WITH YOUR PROFILE</div>
+          
+          <div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Complete your risk profile to see compatibility</div>
+            <a href="/risk-profile" class="sf-btn-outline" style="padding:10px 20px;">Take Quiz →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Gemini Insight -->
+    <div class="sf-card mb-4" style="background:linear-gradient(180deg, var(--bg-surface) 0%, rgba(99,102,241,0.05) 100%);border-color:rgba(99,102,241,0.2);">
+      <div class="sf-card-title d-flex align-items-center gap-2">
+        <span style="font-size:16px;">🤖</span> AI INSIGHT · GEMINI 1.5 FLASH
+      </div>
+      <div style="font-size:15px;line-height:1.6;color:var(--text);margin-top:16px;">RELIANCE has lost 0.4% over the past year and is currently trading below its 20-day average, suggesting short-term caution. With low volatility, it is rated &#39;N/A&#39; for a Unknown investor. Always consider diversifying your portfolio and consult a financial advisor before investing.</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="sf-footer">
+  <p>🌿 SageFolio &copy; 2026 &nbsp;·&nbsp; Educational tool only &nbsp;·&nbsp; Not financial advice &nbsp;·&nbsp; Alpha Vantage Integration</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

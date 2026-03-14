@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(pageTitle='Dashboard', currentPage='dashboard', content=~{::main})}">
+<body>
+<main>
+<div style="padding: 24px 32px; max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px;">
+
+<style>
+  /* Pulse animation for gauge */
+  @keyframes pulseRing {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.3); opacity: 0; }
+  }
+  
+  /* Update Profile button hover */
+  .sf-update-btn {
+    transition: all 0.2s ease;
+  }
+  .sf-update-btn:hover {
+    box-shadow: 0 0 10px var(--categoryColor, var(--primary));
+  }
+  .sf-update-btn:hover .spin-icon {
+    display: inline-block;
+    animation: spinIcon 1s linear infinite;
+  }
+  @keyframes spinIcon { 100% { transform: rotate(360deg); } }
+
+  /* Tip row hover */
+  .sf-tip-row {
+    border-left: 2px solid transparent;
+    border-bottom: 1px solid var(--border-light);
+    transition: background-color 0.2s ease, border-left-color 0.2s ease;
+  }
+  .sf-tip-row:last-child {
+    border-bottom: none;
+  }
+  .sf-tip-row:hover {
+    border-left-color: var(--primary);
+    background-color: var(--bg-surface) !important;
+  }
+  
+  /* Blinking Live Dot */
+  @keyframes blinkDot {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+  }
+  .live-dot {
+    display: inline-block;
+    color: var(--green);
+    animation: blinkDot 1.5s infinite;
+    margin-right: 4px;
+  }
+
+  /* Stock Card Hover */
+  .sf-stock-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .sf-stock-card:hover {
+    transform: translateY(-3px);
+  }
+
+  /* Quick Action Hover */
+  .sf-quick-action {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .sf-quick-action:hover {
+    background-color: var(--bg-surface);
+  }
+  .sf-quick-action .action-arrow {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s ease;
+    font-weight: 800;
+  }
+  .sf-quick-action:hover .action-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Responsive grids */
+  @media (max-width: 768px) {
+    .sf-quick-actions-grid, .sf-stocks-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
+  <!-- ── A. PROFILE SUMMARY BAR ── -->
+  <div class="sf-card" th:style="'display:flex; align-items:center; gap:20px; border-color: var(--categoryColor, var(--primary)); margin-bottom:28px; position:relative; overflow:hidden; background: radial-gradient(circle at 50px 50px, color-mix(in srgb, var(--categoryColor, var(--primary)) 15%, transparent), transparent 70%), var(--bg-surface);'">
+
+    <!-- Score gauge (large doughnut with pulse) -->
+    <div style="position:relative; width:90px; height:90px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+      <!-- Pulse Ring -->
+      <div style="position:absolute; inset:0; border-radius:50%; background-color: var(--categoryColor, var(--primary)); animation: pulseRing 3s infinite; z-index:0;"></div>
+      <!-- Canvas -->
+      <canvas id="miniGauge" width="90" height="90" th:style="'position:relative; z-index:1; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--categoryColor, var(--primary)) 40%, transparent));'"></canvas>
+      <div style="position:absolute; inset:0; display:flex; flex-direction:column;
+           align-items:center; justify-content:center; z-index:2;">
+        <span style="font-size:22px; font-weight:900;
+              color: var(--categoryColor, var(--primary))"
+              th:text="${profile.score}"></span>
+      </div>
+    </div>
+
+    <!-- Profile text -->
+    <div style="flex:1; z-index:1;">
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px; text-transform:uppercase; letter-spacing:0.5px;">
+        YOU ARE A
+      </div>
+      <div style="font-size:20px; font-weight:800; color:var(--categoryColor, var(--primary)); text-transform:capitalize; margin-bottom: 8px;">
+        <span th:text="${profile.category}"></span> Investor
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="font-size:11px; color:var(--text-muted);">
+          Risk Score: <strong th:text="${profile.score} + ' / 100'"></strong>
+        </div>
+        <!-- Mini progress bar -->
+        <div style="width:80px; height:4px; background:var(--bg-surface-2); border-radius:2px; overflow:hidden;">
+          <div th:style="'height:100%; width:' + ${profile.score} + '%; background:var(--categoryColor, var(--primary));'"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update link -->
+    <a href="/risk-profile" class="sf-update-btn"
+       th:style="'font-size:11px; color:var(--categoryColor, var(--primary)); text-decoration:none; border:1px solid var(--categoryColor, var(--primary)); border-radius:7px; padding:8px 16px; white-space:nowrap; z-index:1;'">
+      <span class="spin-icon">↺</span> Update Profile
+    </a>
+  </div>
+
+  <!-- ── B. PERSONALISED TIPS ── -->
+  <div class="sf-card" style="border-color:var(--blue); margin-bottom:28px; padding:0; overflow:hidden;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:0; padding:20px 24px; border-bottom:1px solid var(--border-light);">
+      <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg, var(--blue), color-mix(in srgb, var(--blue) 50%, transparent)); display:flex; align-items:center; justify-content:center; font-size:16px;">
+        💡
+      </div>
+      <div class="sf-card-label" style="margin-bottom:0; font-size:14px;">
+        Tips for <span th:text="${profile.category}"></span> Investors
+      </div>
+      <span class="sf-badge sf-badge-primary" style="padding:6px 12px; font-size:10px; box-shadow: 0 0 8px color-mix(in srgb, var(--blue) 30%, transparent); margin-left:auto;">PERSONALISED</span>
+    </div>
+
+    <div style="padding: 10px 0;">
+      <div th:each="tip, stat : ${tips}" class="sf-tip-row"
+           style="display:flex; align-items:flex-start; gap:12px; padding:12px 24px;"
+           th:styleappend="${stat.even} ? 'background:var(--bg-base)' : 'background:var(--bg-surface-2)'">
+        <span style="color:var(--primary); font-weight:800; font-size:14px; flex-shrink:0;">→</span>
+        <span style="font-size:13px; color:var(--text); line-height:1.6;"
+              th:text="${tip}"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── C. STOCK RECOMMENDATIONS ── -->
+  <div class="sf-card" style="border-color:var(--green); margin-bottom:28px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:28px; height:28px; border-radius:6px; background:linear-gradient(135deg, var(--green), color-mix(in srgb, var(--green) 30%, transparent)); display:flex; align-items:center; justify-content:center; font-size:14px;">
+          📈
+        </div>
+        <div class="sf-card-label" style="margin-bottom:0; font-size:14px;">
+          Stocks Worth Watching Today
+        </div>
+        <span class="sf-badge sf-badge-green"><span class="live-dot">●</span> LIVE · UPDATED DAILY</span>
+      </div>
+    </div>
+
+    <!-- How we picked these flow -->
+    <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-light);">
+      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">How we picked these</div>
+      <div class="d-flex align-items-center gap-2 flex-wrap" style="font-size: 12px; font-weight: 600;">
+         <span class="sf-badge" style="background: var(--bg-surface-2); color: var(--text);">🔵 Started with today's top 8 NSE gainers</span>
+         <span style="color: var(--text-muted);">→</span>
+         <span class="sf-badge" style="background: var(--bg-surface-2); color: var(--text);">⚡ Filtered for your <span th:text="${profile.category}"></span> profile</span>
+         <span style="color: var(--text-muted);">→</span>
+         <span class="sf-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--green);">✅ <span th:text="${#lists.size(recommended)}"></span> stocks matched</span>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${#lists.isEmpty(recommended)}" style="border:1px dashed var(--border); border-radius:12px; padding:40px 20px; text-align:center; background:var(--bg-base); margin:20px 0;">
+      <div style="font-size:40px; margin-bottom:12px;">📭</div>
+      <div style="font-size:16px; font-weight:800; color:var(--text); margin-bottom:6px;">No matches today</div>
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Top gainers are filtered for your <span th:text="${profile.category}"></span> profile. Check back tomorrow.</div>
+      <span class="sf-badge" style="background:var(--bg-surface-2); color:var(--text-muted);">🔄 Refreshes daily at midnight</span>
+    </div>
+
+    <!-- Stock grid -->
+    <div th:if="${not #lists.isEmpty(recommended)}" class="sf-stocks-grid"
+         style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:16px;">
+
+      <div th:each="stock : ${recommended}" class="sf-stock-card"
+           style="background:var(--bg-base); border:1px solid var(--border-light);
+                  border-top: 3px solid transparent; border-radius:10px; padding:16px; position:relative;"
+           th:styleappend="${stock.compatibilityLabel == 'Good Match'} ? 'border-top-color:var(--green);' : 'border-top-color:var(--yellow);'"
+           th:attr="onmouseover=${stock.compatibilityLabel == 'Good Match'} ? 'this.style.boxShadow=\'0 4px 12px color-mix(in srgb, var(--green) 20%, transparent)\'' : 'this.style.boxShadow=\'0 4px 12px color-mix(in srgb, var(--yellow) 20%, transparent)\''"
+           onmouseout="this.style.boxShadow='none'">
+
+        <!-- Compatibility badge absolute top right -->
+        <span th:classappend="${stock.compatibilityLabel == 'Good Match'} ? 'sf-badge-green' : 'sf-badge-yellow'"
+              class="sf-badge" style="position:absolute; top:12px; right:12px; font-size:9px; padding:4px 8px;"
+              th:text="${stock.compatibilityLabel}"></span>
+
+        <!-- Symbol -->
+        <div style="font-size:16px; font-weight:800; color:var(--text); margin-bottom:12px;">
+          <span th:text="${stock.symbol}"></span>
+        </div>
+
+        <!-- Price -->
+        <div style="font-size:22px; font-weight:900; color:var(--text); margin-bottom:4px;">
+          ₹<span th:text="${#numbers.formatDecimal(stock.price, 1, 2)}"></span>
+        </div>
+
+        <!-- Change % -->
+        <div style="font-size:14px; font-weight:700; color:var(--green); margin-bottom:12px;">
+          ▲ <span th:text="${#numbers.formatDecimal(stock.changePercent, 1, 2)}"></span>% today
+        </div>
+
+        <!-- Volatility badge -->
+        <div style="margin-bottom:16px;">
+          <span th:classappend="${stock.volatilityLabel == 'Low'} ? 'sf-badge-green'
+                               : (${stock.volatilityLabel == 'Medium'} ? 'sf-badge-yellow'
+                                                                       : 'sf-badge-red')"
+                class="sf-badge" style="font-size:9px;"
+                th:text="${stock.volatilityLabel + ' Volatility'}"></span>
+        </div>
+
+        <!-- CTA -->
+        <a th:href="@{/stock/analyse(symbol=${stock.symbol})}"
+           style="display:block; text-align:center; font-size:12px; font-weight:700;
+                  color:white; background:var(--btn-gradient);
+                  border-radius:8px; padding:10px; text-decoration:none;">
+          Analyse This Stock →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── D. QUICK ACTIONS ── -->
+  <div class="sf-quick-actions-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+    <a href="/stock-analysis" style="text-decoration:none;">
+      <div class="sf-card sf-quick-action" style="padding:20px; cursor:pointer;"
+           onmouseover="this.style.borderColor='var(--primary)'"
+           onmouseout="this.style.borderColor='var(--border-light)'">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <div style="width:44px; height:44px; border-radius:10px; background:color-mix(in srgb, var(--primary) 15%, transparent); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+            🔍
+          </div>
+          <div>
+            <div style="font-size:13px; font-weight:800; color:var(--text); margin-bottom:4px;">
+              Analyse Any Stock
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+              Search any NSE symbol
+            </div>
+          </div>
+        </div>
+        <span class="action-arrow" style="color:var(--primary);">→</span>
+      </div>
+    </a>
+
+    <a href="/risk-profile" style="text-decoration:none;">
+      <div class="sf-card sf-quick-action" style="padding:20px; cursor:pointer;"
+           onmouseover="this.style.borderColor='var(--blue)'"
+           onmouseout="this.style.borderColor='var(--border-light)'">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <div style="width:44px; height:44px; border-radius:10px; background:color-mix(in srgb, var(--blue) 15%, transparent); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+            📋
+          </div>
+          <div>
+            <div style="font-size:13px; font-weight:800; color:var(--text); margin-bottom:4px;">
+              Retake Assessment
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+              Update your risk profile
+            </div>
+          </div>
+        </div>
+        <span class="action-arrow" style="color:var(--blue);">→</span>
+      </div>
+    </a>
+
+    <a href="/dev-docs" style="text-decoration:none;">
+      <div class="sf-card sf-quick-action" style="padding:20px; cursor:pointer;"
+           onmouseover="this.style.borderColor='var(--green)'"
+           onmouseout="this.style.borderColor='var(--border-light)'">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <div style="width:44px; height:44px; border-radius:10px; background:color-mix(in srgb, var(--green) 15%, transparent); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+            🛠️
+          </div>
+          <div>
+            <div style="font-size:13px; font-weight:800; color:var(--text); margin-bottom:4px;">
+              Dev Docs
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+              How the platform works
+            </div>
+          </div>
+        </div>
+        <span class="action-arrow" style="color:var(--green);">→</span>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+<!-- Mini gauge chart script & Dynamic Category Color -->
+<script th:inline="javascript">
+  const score = /*[[${profile.score}]]*/ 50;
+  const category = /*[[${profile.category}]]*/ 'Moderate';
+  let colorVar = '--primary';
+  if (category === 'Conservative') { colorVar = '--green'; }
+  else if (category === 'Moderate') { colorVar = '--yellow'; }
+  else if (category === 'Aggressive') { colorVar = '--red'; }
+  
+  // Set CSS variable on the main wrapper
+  document.querySelector('.sf-card').parentElement.style.setProperty('--categoryColor', `var(${colorVar})`);
+
+  const colorHex = category === 'Conservative' ? '#10b981'
+                 : category === 'Moderate'     ? '#f59e0b' : '#ef4444';
+  const ctx = document.getElementById('miniGauge').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [score, 100 - score],
+        backgroundColor: [colorHex, '#1f2937'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      cutout: '76%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      events: []
+    }
+  });
+</script>
+</main>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(pageTitle='Risk Profile', currentPage='risk', content=~{::main})}">
+<head></head>
+<body>
+<main class="sf-main">
+
+  <div class="sf-page-header">
+    <a href="/" class="sf-back">← Back</a>
+    <div class="sf-page-title">Risk Profiling</div>
+    <div class="sf-step-indicator d-flex align-items-center">
+      Step 1 of 3
+      <div style="display:inline-block;width:40px;height:4px;background:var(--primary);border-radius:2px;margin-left:12px;"></div>
+      <div style="display:inline-block;width:15px;height:4px;background:var(--bg-surface);border-radius:2px;margin-left:4px;"></div>
+      <div style="display:inline-block;width:15px;height:4px;background:var(--bg-surface);border-radius:2px;margin-left:4px;"></div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Form Side -->
+    <div class="col-lg-7">
+      <div class="sf-card h-100">
+        <h2 class="sf-card-header-main">Tell us about yourself</h2>
+        <p class="sf-card-desc mb-5">Answer 5 short questions. Takes under 2 minutes.</p>
+        
+        <form th:action="@{/calculate-risk}" method="post">
+          <div class="mb-4">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text);">Q0. Your First Name</div>
+            <input type="text" name="name" class="sf-input" placeholder="e.g. Arnav" required
+                   th:value="${profile != null ? profile.name : ''}" />
+          </div>
+
+          <div class="mb-4">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text);">Q1. How long do you plan to stay invested?</div>
+            <div class="d-flex flex-wrap gap-2">
+              <input type="radio" class="btn-check" name="horizon" id="h1" value="1" required th:checked="${profile != null and profile.score < 50}">
+              <label class="sf-pill" for="h1">Less than 1 year</label>
+              <input type="radio" class="btn-check" name="horizon" id="h2" value="2" th:checked="${profile != null and profile.score >= 50 and profile.score < 80}">
+              <label class="sf-pill" for="h2">1–3 years</label>
+              <input type="radio" class="btn-check" name="horizon" id="h3" value="3" th:checked="${profile != null and profile.score >= 80}">
+              <label class="sf-pill" for="h3">3–5 years</label>
+              <input type="radio" class="btn-check" name="horizon" id="h4" value="4">
+              <label class="sf-pill" for="h4">5+ years</label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text);">Q2. How much can you invest monthly?</div>
+            <div class="d-flex flex-wrap gap-2">
+              <input type="radio" class="btn-check" name="income" id="i1" value="1" required th:checked="${profile != null and profile.score < 50}">
+              <label class="sf-pill" for="i1">Not stable</label>
+              <input type="radio" class="btn-check" name="income" id="i2" value="2" th:checked="${profile != null and profile.score >= 50 and profile.score < 80}">
+              <label class="sf-pill" for="i2">Mostly stable</label>
+              <input type="radio" class="btn-check" name="income" id="i3" value="3" th:checked="${profile != null and profile.score >= 80}">
+              <label class="sf-pill" for="i3">Very stable</label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text);">Q3. What's your investing experience?</div>
+            <div class="d-flex flex-wrap gap-2">
+              <input type="radio" class="btn-check" name="experience" id="e1" value="1" required th:checked="${profile != null and profile.score < 50}">
+              <label class="sf-pill" for="e1">Complete beginner</label>
+              <input type="radio" class="btn-check" name="experience" id="e2" value="2" th:checked="${profile != null and profile.score >= 50 and profile.score < 80}">
+              <label class="sf-pill" for="e2">I know the basics</label>
+              <input type="radio" class="btn-check" name="experience" id="e3" value="3" th:checked="${profile != null and profile.score >= 80}">
+              <label class="sf-pill" for="e3">Invested before</label>
+            </div>
+          </div>
+          
+          <div class="mb-5">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text);">Q4. If your investment drops 20%, you would...</div>
+            <div class="d-flex flex-wrap gap-2">
+              <input type="radio" class="btn-check" name="tolerance" id="t1" value="1" required th:checked="${profile != null and profile.score < 50}">
+              <label class="sf-pill" for="t1">Sell immediately</label>
+              <input type="radio" class="btn-check" name="tolerance" id="t5" value="5" th:checked="${profile != null and profile.score >= 50 and profile.score < 80}">
+              <label class="sf-pill" for="t5">Wait and watch</label>
+              <input type="radio" class="btn-check" name="tolerance" id="t10" value="10" th:checked="${profile != null and profile.score >= 80}">
+              <label class="sf-pill" for="t10">Buy more</label>
+            </div>
+          </div>
+
+          <button type="submit" class="sf-btn-primary w-100 py-3" style="font-size:15px;">Calculate Profile</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Result Side -->
+    <div class="col-lg-5">
+      <div class="sf-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="sf-card-header-main m-0">Your Risk Profile</h2>
+          <span th:if="${profile}" class="sf-badge"
+                th:classappend="${profile.category == 'Conservative' ? ' sf-badge-green' : (profile.category == 'Moderate' ? ' sf-badge-yellow' : ' sf-badge-red')}"
+                th:text="${profile.category} + ' INVESTOR'"></span>
+        </div>
+        <p class="sf-card-desc mb-5">Based on your answers below</p>
+        
+        <div th:if="${profile == null}" class="text-center" style="margin-top:60px;">
+          <div style="font-size:42px;font-weight:900;color:var(--text-dim);">--</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Complete the questions to see your score</div>
+        </div>
+
+        <div th:if="${profile != null}">
+          <div class="text-center" style="margin: 40px 0;">
+            <div id="scoreNum" style="font-size:80px;font-weight:900;line-height:1;margin-bottom:4px;" th:text="${#numbers.formatDecimal(profile.score / 10.0, 1, 1)}"></div>
+            <div style="font-size:14px;color:var(--text-muted);">out of 10</div>
+          </div>
+          
+          <div class="sf-gauge">
+            <div class="sf-gauge-track">
+              <div id="gaugeIndicator" class="sf-gauge-indicator" style="left: 0%;"></div>
+            </div>
+            <div class="sf-gauge-labels">
+              <span>Conservative</span>
+              <span>Moderate</span>
+              <span>Aggressive</span>
+            </div>
+            <div class="text-center mt-4" style="font-size:13px;color:var(--text-muted);">
+              Your score: <strong style="color:var(--text);" th:text="${#numbers.formatDecimal(profile.score / 10.0, 1, 1)}"></strong> — <span th:text="${profile.category} + ' Zone'"></span>
+            </div>
+          </div>
+          
+          <details style="margin-top: 32px; background: var(--bg-surface-2); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden;">
+            <summary style="padding: 16px 20px; font-weight: 700; font-size: 14px; cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between;">
+               <span>🔍 See how your score was calculated</span>
+               <span style="color: var(--text-muted); font-size: 12px;">▼</span>
+            </summary>
+            <div style="padding: 0 20px 20px; border-top: 1px solid var(--border-light);">
+               
+               <!-- Horizon Input -->
+               <div style="margin-top: 20px;">
+                  <div class="d-flex justify-content-between mb-2">
+                     <span style="font-size: 13px; font-weight: 600;">Investment Horizon</span>
+                     <span style="font-size: 13px; color: var(--text-muted);"><span th:text="${#numbers.formatDecimal(profile.score * 0.25, 1, 0)}"></span> / 25 pts</span>
+                  </div>
+                  <div style="width: 100%; height: 8px; background: var(--bg-base); border-radius: 4px; overflow: hidden; display: flex;">
+                     <div th:style="'height: 100%; background: var(--primary); width: ' + (${profile.score * 0.25} / 25 * 100) + '%;'"></div>
+                  </div>
+               </div>
+               
+               <!-- Income Input -->
+               <div style="margin-top: 16px;">
+                  <div class="d-flex justify-content-between mb-2">
+                     <span style="font-size: 13px; font-weight: 600;">Income Range</span>
+                     <span style="font-size: 13px; color: var(--text-muted);"><span th:text="${#numbers.formatDecimal(profile.score * 0.20, 1, 0)}"></span> / 20 pts</span>
+                  </div>
+                  <div style="width: 100%; height: 8px; background: var(--bg-base); border-radius: 4px; overflow: hidden; display: flex;">
+                     <div th:style="'height: 100%; background: var(--primary); width: ' + (${profile.score * 0.20} / 20 * 100) + '%;'"></div>
+                  </div>
+               </div>
+
+               <!-- Experience Input -->
+               <div style="margin-top: 16px;">
+                  <div class="d-flex justify-content-between mb-2">
+                     <span style="font-size: 13px; font-weight: 600;">Experience Level</span>
+                     <span style="font-size: 13px; color: var(--text-muted);"><span th:text="${#numbers.formatDecimal(profile.score * 0.20, 1, 0)}"></span> / 20 pts</span>
+                  </div>
+                  <div style="width: 100%; height: 8px; background: var(--bg-base); border-radius: 4px; overflow: hidden; display: flex;">
+                     <div th:style="'height: 100%; background: var(--primary); width: ' + (${profile.score * 0.20} / 20 * 100) + '%;'"></div>
+                  </div>
+               </div>
+
+               <!-- Tolerance Input -->
+               <div style="margin-top: 16px;">
+                  <div class="d-flex justify-content-between mb-2">
+                     <span style="font-size: 13px; font-weight: 600;">Risk Tolerance</span>
+                     <span style="font-size: 13px; color: var(--text-muted);"><span th:text="${#numbers.formatDecimal(profile.score * 0.35, 1, 0)}"></span> / 35 pts</span>
+                  </div>
+                  <div style="width: 100%; height: 8px; background: var(--bg-base); border-radius: 4px; overflow: hidden; display: flex;">
+                     <div th:style="'height: 100%; background: var(--primary); width: ' + (${profile.score * 0.35} / 35 * 100) + '%;'"></div>
+                  </div>
+               </div>
+               
+               <div style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border-light); display: flex; justify-content: space-between; align-items: center; font-weight: 800;">
+                  <span>Total Score</span>
+                  <span style="color: var(--primary);" th:text="${profile.score} + ' / 100'"></span>
+               </div>
+               
+               <div style="margin-top: 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;"
+                    th:text="${profile.category == 'Conservative' ? 'Your lower risk tolerance and focus on stability kept your score in the Conservative category.' : (profile.category == 'Aggressive' ? 'Your high risk tolerance and longer investment horizon pushed your score into the Aggressive category.' : 'Your balanced view on risk and return placed you solidly in the Moderate category.')}">
+               </div>
+
+            </div>
+          </details>
+          
+          <div class="mt-5 text-center">
+             <a href="/stock-analysis" class="sf-btn-outline" style="width:100%; display:block; padding:12px; font-size:14px;">Proceed to Stock Analysis →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Animation Script -->
+  <script th:if="${profile != null}" th:inline="javascript">
+    /*<![CDATA[*/
+    const finalScore = /*[[${profile.score}]]*/ 0;
+    const categoryName = /*[[${profile.category}]]*/ 'Moderate';
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      // Gauge Animation
+      const indicator = document.getElementById('gaugeIndicator');
+      if (indicator) {
+        indicator.style.transition = 'left 1.2s cubic-bezier(0.22, 1, 0.36, 1)'; // Duration set exactly to 1200ms
+        // Trigger reflow to apply initial 0%
+        void indicator.offsetWidth;
+        indicator.style.left = finalScore + '%';
+      }
+      
+      // Number Count-up Animation
+      const scoreNum = document.getElementById('scoreNum');
+      if (scoreNum) {
+        const target = finalScore / 10.0;
+        const duration = 1200; // Match gauge duration
+        const startTime = performance.now();
+        
+        scoreNum.innerText = "0.0"; // Start at 0
+        
+        const animate = (time) => {
+          let elapsed = time - startTime;
+          let progress = Math.min(elapsed / duration, 1);
+          // Ease-out cubic formula
+          let easeProgress = 1 - Math.pow(1 - progress, 3); 
+          scoreNum.innerText = (target * easeProgress).toFixed(1);
+          
+          if (progress < 1) {
+             requestAnimationFrame(animate);
+          } else {
+             // Show summary sentence via DOM injection precisely when counting finishes
+             const summaryContainer = document.querySelector('.sf-gauge-labels').nextElementSibling;
+             if(summaryContainer && !document.getElementById('cat-summary')) {
+                const sentence = categoryName === 'Conservative' 
+                     ? "You prefer to protect what you have over chasing big gains."
+                     : (categoryName === 'Aggressive' 
+                        ? "You're comfortable with big swings in exchange for higher potential returns." 
+                        : "You're open to some risk if it means better long-term returns.");
+                        
+                const summaryDiv = document.createElement('div');
+                summaryDiv.id = 'cat-summary';
+                summaryDiv.style.marginTop = '12px';
+                summaryDiv.style.fontSize = '12px';
+                summaryDiv.style.color = 'var(--text)';
+                summaryDiv.style.fontWeight = '600';
+                summaryDiv.style.opacity = '0';
+                summaryDiv.style.transform = 'translateY(10px)';
+                summaryDiv.style.transition = 'all 0.5s ease';
+                summaryDiv.innerText = sentence;
+                
+                summaryContainer.appendChild(summaryDiv);
+                
+                // trigger animation
+                setTimeout(() => {
+                    summaryDiv.style.opacity = '1';
+                    summaryDiv.style.transform = 'translateY(0)';
+                }, 50);
+             }
+          }
+        };
+        setTimeout(() => requestAnimationFrame(animate), 50);
+      }
+    });
+    /*]]>*/
+  </script>
+
+</main>
+</body>
+</html>
